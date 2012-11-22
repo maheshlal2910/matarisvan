@@ -3,7 +3,7 @@
 
 import unittest
 
-from matarisvan.operation_graph.data_operations import Informer, DataExtractor
+from matarisvan.operation_graph.data_operations import Informer, DataExtractor, DataSanitizer
 
 
 class DataExtractorTest (unittest.TestCase):
@@ -24,3 +24,29 @@ class DataExtractorTest (unittest.TestCase):
             DataExtractor({'id':'some_id'}, [], {})
         with self.assertRaises(AssertionError):
             DataExtractor({'id':'some_id'}, {'name': 'name_val'}, [])
+
+
+class DataSanitizerTest(unittest.TestCase):
+    
+    def test_shouldaccept_string_or_list(self):
+        data_sanitizer = DataSanitizer('http://localhost')
+        self.assertEquals('http://localhost', data_sanitizer._url_descriptor)
+        data_sanitizer = DataSanitizer(['hello','world'])
+        self.assertEquals(['hello', 'world'], data_sanitizer._url_descriptor)
+    
+    def test_shouldnt_accept_anything_other_than_list_or_string_for_url_descriptor_rest_can_be(self):
+        with self.assertRaises(AssertionError):
+            DataSanitizer({'hello':'world'})
+    
+    def test_url_described_by_should_return_url_if_set(self):
+        data_sanitizer = DataSanitizer('http://localhost')
+        self.assertEquals('http://localhost', data_sanitizer.url_described_by())
+    
+    def test_url_described_by_should_return_url_from_data_passed_in_if_descriptor_is_list(self):
+        data_sanitizer = DataSanitizer(['links', 'self', 'url'])
+        self.assertEquals('http://localhost', data_sanitizer.url_described_by({'links':{'self':{'url':'http://localhost'}}}))
+    
+    def test_url_described_by_should_throw_error_if_data_passed_in_is_none_and_descriptor_is_list(self):
+        data_sanitizer = DataSanitizer(['links', 'self', 'url'])
+        with self.assertRaises(AssertionError):
+            data_sanitizer.url_described_by()

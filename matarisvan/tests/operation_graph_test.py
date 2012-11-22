@@ -4,7 +4,6 @@ from mock import Mock, patch
 from matarisvan.operations import OperationGraph
 
 from matarisvan.operation_graph.entities import OperationNode
-from matarisvan.operation_graph.data_operations import Informer, DataExtractor
 
 
 class StubModel(object):
@@ -36,10 +35,10 @@ class OperationGraphTest(unittest.TestCase):
         self.assertIsNotNone(self.g._informer)
         self.assertEquals('mahesh', self.g._informer._username)
         self.assertEquals('password', self.g._informer._password)
-        self.assertIsNotNone(self.g._data_fetch_info)
-        self.assertEquals('http://localhost', self.g._data_fetch_info._url_descriptor)
-        self.assertEquals('nonsense', self.g._data_fetch_info._discard_value)
-        self.assertEquals('data', self.g._data_fetch_info._data_key)
+        self.assertIsNotNone(self.g._data_sanitizer)
+        self.assertEquals('http://localhost', self.g._data_sanitizer._url_descriptor)
+        self.assertEquals('nonsense', self.g._data_sanitizer._discard_value)
+        self.assertEquals('data', self.g._data_sanitizer._data_key)
     
     def test_from_url_should_return_self(self):
         graph = self.g.from_url('http://localhost', discard='nonsense', data_found_at='data')
@@ -59,13 +58,13 @@ class OperationGraphTest(unittest.TestCase):
         self.assertTrue('mahesh', self.g._password)
         self.assertTrue('password', self.g._username)
         self.assertTrue(self.g._informer is None)
-        self.assertTrue(self.g._data_fetch_info is None)
+        self.assertTrue(self.g._data_sanitizer is None)
     
     def test_create_or_update_should_create_informer_and_data_extractor_on_node(self):
         self.g.from_url('http://localhost', discard='nonsense', data_found_at='data').create_or_update(StubModel, {}, {})
         self.assertIsNotNone(self.g.current._informer)
         self.assertIsNotNone(self.g.current._data_extractor)
-        self.assertIsNotNone(self.g.current._data_fetch_info)
+        self.assertIsNotNone(self.g.current._data_sanitizer)
         
     def test_has_subgraph_should_make_subgraph_root_if_root_is_none(self):
         subgraph = OperationGraph.using('mahesh', 'password').from_url("http://localhost").create_or_update(StubModel(), {}, {})
@@ -85,4 +84,4 @@ class OperationGraphTest(unittest.TestCase):
         subgraph = OperationGraph.using('mahesh', 'password').from_url("http://localhost").create_or_update(StubModel(), {}, {})
         self.g.has_subgraph(subgraph)
         self.assertTrue(self.g._informer is None)
-        self.assertTrue(self.g._data_fetch_info is None)
+        self.assertTrue(self.g._data_sanitizer is None)
