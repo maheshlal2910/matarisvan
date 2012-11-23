@@ -1,23 +1,27 @@
+#!/usr/bin/env python
+#-*- coding:utf-8 -*-
+
 
 import urllib2, ast, base64, urllib
 
 class Informer(object):
     
     def __init__(self, username=None, password=None):
-        self._username = username
-        self._password = password
+        self._auth_string = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')
     
-    def get_data_from(self, data_fetch_info):
+    def using(self, data_sanitizer):
+        self._data_sanitizer = data_sanitizer
+        return self
+    
+    def get_data_from(self, data):
         pass
 
 
-class DataSanitizer(object):
+class UrlExtractor(object):
     
-    def __init__(self, url_descriptor, discard_value=None, data_key=None):
+    def __init__(self, url_descriptor):
         assert type(url_descriptor) is list or type(url_descriptor) is str
         self._url_descriptor = url_descriptor
-        self._discard_value = discard_value
-        self._data_key = data_key
     
     def url_described_by(self, url_container = None):
         if type(self._url_descriptor) is str:
@@ -26,6 +30,16 @@ class DataSanitizer(object):
         for key in self._url_descriptor:
             url_container = url_container[key]
         return url_container
+
+
+class DataSanitizer(object):
+    
+    def __init__(self, discard_value=None, data_key=None):
+        self._discard_value = discard_value
+        self._data_key = data_key
+    
+    def clean(self, data):
+        pass
 
 
 class DataExtractor(object):
