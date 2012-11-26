@@ -13,8 +13,11 @@ class Informer(object):
         self._data_sanitizer = data_sanitizer
         return self
     
-    def get_data_from(self, data):
-        pass
+    def get_data_from(self, url):
+        request = urllib2.Request(url)
+        request.add_header("Authorization", "Basic %s" % self._auth_string)
+        result = urllib2.urlopen(request)
+        return self._data_sanitizer.clean(result)
 
 
 class UrlExtractor(object):
@@ -39,7 +42,13 @@ class DataSanitizer(object):
         self._data_key = data_key
     
     def clean(self, data):
-        pass
+        if self._discard_value:
+            data = data.replace(self._discard_value, '')
+        data = data.strip()
+        cleaned_data = ast.literal_eval(data)
+        if self._data_key:
+            return cleaned_data.get(self._data_key)
+        return cleaned_data
 
 
 class DataExtractor(object):

@@ -4,8 +4,9 @@
 import unittest
 
 from mock import Mock
+from mock import patch
 
-import base64
+import base64, urllib2
 
 from matarisvan.operation_graph.data_operations import Informer, DataExtractor, UrlExtractor, DataSanitizer
 
@@ -33,35 +34,49 @@ class DataExtractorTest (unittest.TestCase):
 class UrlExtractorTest(unittest.TestCase):
     
     def test_shouldaccept_string_or_list(self):
-        data_sanitizer = UrlExtractor('http://localhost')
-        self.assertEquals('http://localhost', data_sanitizer._url_descriptor)
-        data_sanitizer = UrlExtractor(['hello','world'])
-        self.assertEquals(['hello', 'world'], data_sanitizer._url_descriptor)
+        url_extractor = UrlExtractor('http://localhost')
+        self.assertEquals('http://localhost', url_extractor._url_descriptor)
+        url_extractor = UrlExtractor(['hello','world'])
+        self.assertEquals(['hello', 'world'], url_extractor._url_descriptor)
     
     def test_shouldnt_accept_anything_other_than_list_or_string_for_url_descriptor_rest_can_be(self):
         with self.assertRaises(AssertionError):
             UrlExtractor({'hello':'world'})
     
     def test_url_described_by_should_return_url_if_set(self):
-        data_sanitizer = UrlExtractor('http://localhost')
-        self.assertEquals('http://localhost', data_sanitizer.url_described_by())
+        url_extractor = UrlExtractor('http://localhost')
+        self.assertEquals('http://localhost', url_extractor.url_described_by())
     
     def test_url_described_by_should_return_url_from_data_passed_in_if_descriptor_is_list(self):
-        data_sanitizer = UrlExtractor(['links', 'self', 'url'])
-        self.assertEquals('http://localhost', data_sanitizer.url_described_by({'links':{'self':{'url':'http://localhost'}}}))
+        url_extractor = UrlExtractor(['links', 'self', 'url'])
+        self.assertEquals('http://localhost', url_extractor.url_described_by({'links':{'self':{'url':'http://localhost'}}}))
     
     def test_url_described_by_should_throw_error_if_data_passed_in_is_none_and_descriptor_is_list(self):
-        data_sanitizer = UrlExtractor(['links', 'self', 'url'])
+        url_extractor = UrlExtractor(['links', 'self', 'url'])
         with self.assertRaises(AssertionError):
-            data_sanitizer.url_described_by()
+            url_extractor.url_described_by()
 
 
 class DataSanitizerTest(unittest.TestCase):
-    pass
+    
+    def test_should_clean_data_passed_in(self):
+        sanitizer = DataSanitizer(discard_value = 'val', data_key = 'key')
+        data = sanitizer.clean(" val {'key' : []}")
+        self.assertEquals([], data)
+    
+    def test_should_return_data_without_truncation_if_no_discard_value(self):
+        sanitizer = DataSanitizer(data_key = 'key')
+        data = sanitizer.clean("{'key' : [{'hello':1, 'world':2}]}")
+        self.assertEquals([{'hello':1, 'world':2}], data)
+    
+    def test_should_return_data_as_is_if_data_key_not_defined(self):
+        sanitizer = DataSanitizer()
+        data = sanitizer.clean("{'key' : [{'hello':1, 'world':2}]}")
+        self.assertEquals({'key' : [{'hello':1, 'world':2}]}, data)
 
 
 class InformerTest(unittest.TestCase):
-    
+
     def test_should_encode_username_and_password_to_authstring(self):
         self.informer = Informer(username='test', password='test_pswd')
         auth_string = base64.encodestring('%s:%s' % ('test', 'test_pswd')).replace('\n', '')
@@ -78,3 +93,16 @@ class InformerTest(unittest.TestCase):
         self.data_sanitizer = Mock(spec = DataSanitizer)
         informer = self.informer.using(self.data_sanitizer)
         self.assertEquals(self.informer, informer)
+    
+    def test_should_fetch_data_from_url_and_sanitize_it_return_sanitized_data(self):
+        self.informer = Informer(username='test', password='password')
+        self.data_sanitizer = Mock(spec = DataSanitizer)
+        self.data_sanitizer.clean.return_value = {'key':[]}
+        auth_string = base64.encodestring('%s:%s' % ('test', 'password')).replace('\n', '')
+        request = urllib2.Request('http://localhost')
+        request.add_header("Authorization", "Basic %s" % auth_string)
+        with patch.object(urllib2, 'urlopen') as mock_urllib:
+            mock_urllib.return_value = "val {'key' : []}"
+            data = self.informer.using(self.data_sanitizer).get_data_from(url = "http://localhost")
+            self.data_sanitizer.clean.assert_called_with("val {'key' : []}")
+            self.assertEquals({'key':[]}, data)

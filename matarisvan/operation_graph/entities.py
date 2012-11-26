@@ -21,7 +21,8 @@ class OperationNode(object):
         self.children.append(child_rel)
 
     def execute(self, data=None):
-        self._informer.using(self._data_sanitizer)
+        url = self._url_extractor.url_described_by(data)
+        self._informer.using(self._data_sanitizer).get_data_from(url)
 
 class Relationship(object):
     

@@ -71,3 +71,11 @@ class OperationNodeTest(unittest.TestCase):
     def test_execute_should_set_data_sanitizer_on_informer(self):
         self.node.execute()
         self.informer.using.assert_called_with(self.data_sanitizer)
+    
+    def test_execute_should_call_get_data_with_appropriate_url(self):
+        data = {'some_data':{'url':'http://localhost'}}
+        self.url_extractor.url_described_by.return_value = 'http://localhost'
+        self.informer.using.return_value = self.informer
+        self.node.execute(data)
+        self.url_extractor.url_described_by.assert_called_with(data)
+        self.informer.get_data_from.assert_called_with('http://localhost')
