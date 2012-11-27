@@ -3,6 +3,7 @@
 
 
 import unittest
+import mock
 from mock import Mock
 
 from matarisvan.operation_graph.entities import OperationNode, Relationship
@@ -12,8 +13,9 @@ from matarisvan.operation_graph.tests.test_data import user_test_data
 #Stub classes
 class StubModel(object):
     
+    @classmethod
     def get_or_create(self, **kwds):
-        pass
+        return StubModel()
         
     def update(self, **kwds):
         pass
@@ -28,12 +30,18 @@ class Without_update(object):
     def get_or_create(self, **kwds):
         pass
 
+class StubDataExtractor(object):
+    
+    def extract_data_from(self, data):
+        return {'username':'test'}, {'email':'test@test.com'}
+
 
 class OperationNodeTest(unittest.TestCase):
     
     def setUp(self):
         self.informer = Mock(spec = Informer)
         self.data_extractor = Mock(spec = DataExtractor)
+        self.data_extractor.extract_model_data_from.return_value = ({'username':'test'}, {'email':'test@test.com'})
         self.url_extractor = Mock(spec = UrlExtractor)
         self.data_sanitizer = Mock(spec = DataSanitizer)
         self.node = OperationNode(model=StubModel, informer = self.informer, data_extractor = self.data_extractor, url_extractor = self.url_extractor, data_sanitizer = self.data_sanitizer)
@@ -94,3 +102,14 @@ class OperationNodeTest(unittest.TestCase):
         self.informer.get_data_from.return_value = user_test_data
         self.node.execute(data)
         self.data_extractor.extract_model_data_from.assert_called_with(user_test_data[1])
+    
+    def test_execute_should_use_data_returned_by_data_extractor_to_create_and_update(self):
+        model_class = Mock(spec = StubModel)
+        model_instance = Mock(spec = StubModel)
+        model_class.get_or_create.return_value = model_instance
+        data_extractor = StubDataExtractor()
+        node = OperationNode(model_class, self.informer, self.data_extractor, self.url_extractor,self.data_sanitizer)
+        data = {'some_data':{'url':'http://localhost'}}
+        node.execute(data)
+        model_class.get_or_create.assert_called_with(username='test')
+        model_instance.update.assert_called_with(email='test@test.com')

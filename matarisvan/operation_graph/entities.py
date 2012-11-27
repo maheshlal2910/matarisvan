@@ -13,6 +13,7 @@ class OperationNode(object):
         self._data_extractor = data_extractor
         self._url_extractor = url_extractor
         self._data_sanitizer = data_sanitizer
+        self._model = model
     
     def add_child(self, child):
         assert type(child) is OperationNode
@@ -29,7 +30,8 @@ class OperationNode(object):
             self._create_model_using(response)
     
     def _create_model_using(self, data):
-        self._data_extractor.extract_model_data_from(data)
+        model_ids, model_data = self._data_extractor.extract_model_data_from(data)
+        self._model.get_or_create(**model_ids).update(**model_data)
 
 class Relationship(object):
     
