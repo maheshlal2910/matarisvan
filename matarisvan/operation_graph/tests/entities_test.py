@@ -7,6 +7,7 @@ from mock import Mock
 
 from matarisvan.operation_graph.entities import OperationNode, Relationship
 from matarisvan.operation_graph.data_operations import Informer, DataExtractor, UrlExtractor, DataSanitizer
+from matarisvan.operation_graph.tests.test_data import user_test_data
 
 #Stub classes
 class StubModel(object):
@@ -79,3 +80,17 @@ class OperationNodeTest(unittest.TestCase):
         self.node.execute(data)
         self.url_extractor.url_described_by.assert_called_with(data)
         self.informer.get_data_from.assert_called_with('http://localhost')
+    
+    def test_execute_should_call_dataExtractor_with_what_get_data_returns(self):
+        data = {'some_data':{'url':'http://localhost'}}
+        self.informer.using.return_value = self.informer
+        self.informer.get_data_from.return_value = user_test_data[0]
+        self.node.execute(data)
+        self.data_extractor.extract_model_data_from.assert_called_with(user_test_data[0])
+    
+    def test_execute_should_call_dataExtractor_with_individual_data_snippets_if_get_data_refturns_a_list(self):
+        data = {'some_data':{'url':'http://localhost'}}
+        self.informer.using.return_value = self.informer
+        self.informer.get_data_from.return_value = user_test_data
+        self.node.execute(data)
+        self.data_extractor.extract_model_data_from.assert_called_with(user_test_data[1])

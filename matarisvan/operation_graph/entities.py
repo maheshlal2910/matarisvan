@@ -22,7 +22,14 @@ class OperationNode(object):
 
     def execute(self, data=None):
         url = self._url_extractor.url_described_by(data)
-        self._informer.using(self._data_sanitizer).get_data_from(url)
+        response = self._informer.using(self._data_sanitizer).get_data_from(url)
+        if type(response) is list:
+            map(self._create_model_using, response)
+        else:
+            self._create_model_using(response)
+    
+    def _create_model_using(self, data):
+        self._data_extractor.extract_model_data_from(data)
 
 class Relationship(object):
     

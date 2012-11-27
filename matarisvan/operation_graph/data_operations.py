@@ -57,9 +57,12 @@ class DataExtractor(object):
         assert type(model_id_mapping) is dict
         assert type(model_data_mapping) is dict
         assert type(default) is dict
-        model_id_mapping.update(default)
         self._model_id_mapping = model_id_mapping
         self._model_data_mapping = model_data_mapping
+        self._model_default = default
     
     def extract_model_data_from(self, data):
-        pass
+        model_data = { attribute : data[self._model_data_mapping[attribute]] for attribute in self._model_data_mapping}
+        model_ids = {attribute : data[self._model_id_mapping[attribute]] for attribute in self._model_id_mapping}
+        model_ids.update(self._model_default)
+        return model_ids, model_data

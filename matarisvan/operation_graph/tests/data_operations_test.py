@@ -8,7 +8,8 @@ from mock import patch
 
 import base64, urllib2
 
-from matarisvan.operation_graph.data_operations import Informer, DataExtractor, UrlExtractor, DataSanitizer
+from matarisvan.operation_graph. data_operations import Informer, DataExtractor, UrlExtractor, DataSanitizer
+from matarisvan.operation_graph.tests.test_data import user_test_data
 
 
 class DataExtractorTest (unittest.TestCase):
@@ -20,7 +21,8 @@ class DataExtractorTest (unittest.TestCase):
     
     def test_should_augment_id_with_defaults(self):
         data_extractor = DataExtractor({'id':'some_id'}, {'name': 'name_val'}, {'type': 'node_type'})
-        self.assertEquals({'id':'some_id', 'type': 'node_type'}, data_extractor._model_id_mapping)
+        self.assertEquals({'id':'some_id'}, data_extractor._model_id_mapping)
+        self.assertEquals({'type': 'node_type'}, data_extractor._model_default)
         
     def test_should_accept_only_dicts(self):
         with self.assertRaises(AssertionError):
@@ -29,6 +31,27 @@ class DataExtractorTest (unittest.TestCase):
             DataExtractor({'id':'some_id'}, [], {})
         with self.assertRaises(AssertionError):
             DataExtractor({'id':'some_id'}, {'name': 'name_val'}, [])
+    
+    def test_extract_model_data_from_should_get_data_extracted_from_what_is_passed_in(self):
+        model_data = {"name": "name",
+                    "mytw_user_id": "id",
+                    "email": "email"
+                    }
+        model_ids = {"username":"username"}
+        data_extractor = DataExtractor(model_id_mapping = model_ids, model_data_mapping = model_data)
+        model_ids, model_data = data_extractor.extract_model_data_from(user_test_data[0])
+        self.assertEquals({'username': 'johndoe'}, model_ids)
+        self.assertEquals({'email' : 'johndoe@domain.com', 'name':'John Doe', 'mytw_user_id':1278237}, model_data)
+    
+    def test_extract_model_data_from_should_merge_default_into_model_id_if_specefied(self):
+        model_data = {"name": "name",
+                    "mytw_user_id": "id",
+                    "email": "email"
+                    }
+        model_ids = {"username":"username"}
+        data_extractor = DataExtractor(model_id_mapping = model_ids, model_data_mapping = model_data, default = {'type':'user'})
+        model_ids, model_data = data_extractor.extract_model_data_from(user_test_data[0])
+        self.assertEquals({'username': 'johndoe', 'type':'user'}, model_ids)
 
 
 class UrlExtractorTest(unittest.TestCase):
