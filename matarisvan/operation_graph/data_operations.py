@@ -23,11 +23,11 @@ class Informer(object):
 class UrlExtractor(object):
     
     def __init__(self, url_descriptor):
-        assert type(url_descriptor) is list or type(url_descriptor) is str
+        assert isinstance(url_descriptor, list) or isinstance(url_descriptor, str)
         self._url_descriptor = url_descriptor
     
     def url_described_by(self, url_container = None):
-        if type(self._url_descriptor) is str:
+        if isinstance(self._url_descriptor, str):
             return self._url_descriptor
         assert url_container is not None
         for key in self._url_descriptor:
@@ -54,9 +54,9 @@ class DataSanitizer(object):
 class DataExtractor(object):
     
     def __init__(self, model_id_mapping, model_data_mapping, default={}):
-        assert type(model_id_mapping) is dict
-        assert type(model_data_mapping) is dict
-        assert type(default) is dict
+        assert isinstance(model_id_mapping, dict)
+        assert isinstance(model_data_mapping,dict)
+        assert isinstance(default, dict)
         self._model_id_mapping = model_id_mapping
         self._model_data_mapping = model_data_mapping
         self._model_default = default

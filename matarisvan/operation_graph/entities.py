@@ -16,7 +16,7 @@ class OperationNode(object):
         self._model = model
     
     def add_child(self, child):
-        assert type(child) is OperationNode
+        assert isinstance(child, OperationNode)
         child_rel = Relationship(self, child)
         child.parent = Relationship(child, self)
         self.children.append(child_rel)
@@ -24,7 +24,7 @@ class OperationNode(object):
     def execute(self, data=None):
         url = self._url_extractor.url_described_by(data)
         response = self._informer.using(self._data_sanitizer).get_data_from(url)
-        if type(response) is list:
+        if isinstance(response, list):
             map(self._create_model_using, response)
         else:
             self._create_model_using(response)
