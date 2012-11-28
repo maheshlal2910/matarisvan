@@ -14,8 +14,8 @@ class OperationGraph(object):
         graph._password = password
         return graph
     
-    def from_url(self, url, discard=None, data_found_at=None):
-        self._url_extractor = UrlExtractor(url)
+    def from_url(self, url, discard=None, data_found_at=None, next_url_generators=[]):
+        self._url_extractor = UrlExtractor(url, next_url_generators)
         self._data_sanitizer = DataSanitizer(discard, data_found_at)
         self._informer = Informer(self._username, self._password)
         return self
@@ -30,10 +30,10 @@ class OperationGraph(object):
         self._data_sanitizer = None
         return self
     
-    def has_relationship(self, relationship, subgraph_defining_reltaionship):
+    def has_relationship(self, relationship, subgraph_defining_relationship):
         assert self.root
-        subgraph_defining_reltaionship.root.has_relationship_with_parent(relationship)
-        self.current.add_child(subgraph_defining_reltaionship.root)
+        subgraph_defining_relationship.root.has_relationship_with_parent(relationship)
+        self.current.add_child(subgraph_defining_relationship.root)
         return self
     
     def execute(self):

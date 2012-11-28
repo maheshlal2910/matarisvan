@@ -55,7 +55,7 @@ class OperationGraphTest(unittest.TestCase):
         self.assertEquals(self.g.root, self.g.current)
     
     def test_create_or_update_should_set_locals_except_cred_to_none(self):
-        self.g.from_url('http://localhost', discard='nonsense', data_found_at='data').create_or_update(StubModel(), {}, {})
+        self.g.from_url('http://localhost', discard='nonsense', data_found_at='data', next_url_generators=[]).create_or_update(StubModel(), {}, {})
         self.assertTrue('test', self.g._password)
         self.assertTrue('password', self.g._username)
         self.assertTrue(self.g._informer is None)
@@ -90,6 +90,6 @@ class OperationGraphTest(unittest.TestCase):
     def test_has_relationship_should_add_subgraph_supplied_as_subgraph_defining_relationship(self):
         self.g.from_url('http://localhost', discard='nonsense', data_found_at='data').create_or_update(StubModel(), {}, {})
         subgraph = OperationGraph.using('test', 'password').from_url("http://localhost").create_or_update(StubModel(), {}, {})
-        self.g.has_relationship('some_relationship', subgraph_defining_reltaionship = subgraph)
+        self.g.has_relationship('some_relationship', subgraph_defining_relationship = subgraph)
         current = self.g.current
         self.assertEquals('some_relationship', current.children[0].end_node._has_relationship)
