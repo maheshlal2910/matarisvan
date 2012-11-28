@@ -17,13 +17,14 @@ class OperationNode(object):
         self._has_relationship = ''
     
     def add_child(self, child):
+        print child
         assert isinstance(child, OperationNode)
         child_rel = Relationship(self, child)
         child.parent = Relationship(child, self)
         self.children.append(child_rel)
     
     def execute(self, data=None, parent=None):
-        url = self._url_extractor.url_described_by(data)
+        url = self._url_extractor.get_next_url(data)
         response = self._informer.using(self._data_sanitizer).get_data_from(url)
         if isinstance(response, list):
             for data in response:

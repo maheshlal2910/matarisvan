@@ -22,11 +22,11 @@ class Informer(object):
 
 class UrlExtractor(object):
     
-    def __init__(self, url_descriptor):
+    def __init__(self, url_descriptor, next_url_generators=[]):
         assert isinstance(url_descriptor, list) or isinstance(url_descriptor, str)
         self._url_descriptor = url_descriptor
     
-    def url_described_by(self, url_container = None):
+    def get_next_url(self, url_container = None):
         if isinstance(self._url_descriptor, str):
             return self._url_descriptor
         assert url_container is not None

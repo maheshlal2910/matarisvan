@@ -66,18 +66,18 @@ class UrlExtractorTest(unittest.TestCase):
         with self.assertRaises(AssertionError):
             UrlExtractor({'hello':'world'})
     
-    def test_url_described_by_should_return_url_if_set(self):
+    def test_get_next_url_should_return_url_if_set(self):
         url_extractor = UrlExtractor('http://localhost')
-        self.assertEquals('http://localhost', url_extractor.url_described_by())
+        self.assertEquals('http://localhost', url_extractor.get_next_url())
     
-    def test_url_described_by_should_return_url_from_data_passed_in_if_descriptor_is_list(self):
+    def test_get_next_url_should_return_url_from_data_passed_in_if_descriptor_is_list(self):
         url_extractor = UrlExtractor(['links', 'self', 'url'])
-        self.assertEquals('http://localhost', url_extractor.url_described_by({'links':{'self':{'url':'http://localhost'}}}))
+        self.assertEquals('http://localhost', url_extractor.get_next_url({'links':{'self':{'url':'http://localhost'}}}))
     
-    def test_url_described_by_should_throw_error_if_data_passed_in_is_none_and_descriptor_is_list(self):
+    def test_get_next_url_should_throw_error_if_data_passed_in_is_none_and_descriptor_is_list(self):
         url_extractor = UrlExtractor(['links', 'self', 'url'])
         with self.assertRaises(AssertionError):
-            url_extractor.url_described_by()
+            url_extractor.get_next_url()
 
 
 class DataSanitizerTest(unittest.TestCase):
