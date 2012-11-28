@@ -68,22 +68,28 @@ class OperationGraphTest(unittest.TestCase):
         self.assertIsNotNone(self.g.current._data_extractor)
         self.assertIsNotNone(self.g.current._url_extractor)
         
-    def test_has_subgraph_should_make_subgraph_root_if_root_is_none(self):
-        subgraph = OperationGraph.using('test', 'password').from_url("http://localhost").create_or_update(StubModel(), {}, {})
-        self.g.has_subgraph(subgraph)
-        root = self.g.root
-        self.assertEquals(subgraph.root, root )
+    def test_has_relationship_should_throw_exception_root_is_none(self):
+        subgraph = OperationGraph.using('test', 'password').from_url("http://localhost")
+        with self.assertRaises(AssertionError):
+            self.g.has_relationship('relationship', subgraph)
     
-    def test_has_subgraph_should_create_child_to_curent(self):
+    def test_has_relationship_should_create_child_to_curent(self):
         self.g.from_url('http://localhost', discard='nonsense', data_found_at='data').create_or_update(StubModel(), {}, {})
         subgraph = OperationGraph.using('test', 'password').from_url("http://localhost").create_or_update(StubModel(), {}, {})
-        self.g.has_subgraph(subgraph)
+        self.g.has_relationship('relationship', subgraph)
         current = self.g.current
         self.assertEquals(subgraph.root, current.children[0].end_node )
     
-    def test_has_subgraph_should_clear_all_current_variables(self):
+    def test_has_relationship_should_clear_all_current_variables(self):
         self.g.from_url('http://localhost', discard='nonsense', data_found_at='data').create_or_update(StubModel(), {}, {})
         subgraph = OperationGraph.using('test', 'password').from_url("http://localhost").create_or_update(StubModel(), {}, {})
-        self.g.has_subgraph(subgraph)
+        self.g.has_relationship('relationship', subgraph)
         self.assertTrue(self.g._informer is None)
         self.assertTrue(self.g._data_sanitizer is None)
+    
+    def test_has_relationship_should_add_subgraph_supplied_as_subgraph_defining_relationship(self):
+        self.g.from_url('http://localhost', discard='nonsense', data_found_at='data').create_or_update(StubModel(), {}, {})
+        subgraph = OperationGraph.using('test', 'password').from_url("http://localhost").create_or_update(StubModel(), {}, {})
+        self.g.has_relationship('some_relationship', subgraph_defining_reltaionship = subgraph)
+        current = self.g.current
+        self.assertEquals('some_relationship', current.children[0].end_node._has_relationship)

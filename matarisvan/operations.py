@@ -30,11 +30,10 @@ class OperationGraph(object):
         self._data_sanitizer = None
         return self
     
-    def has_subgraph(self, graph):
-        if not self.root:
-            self.root = graph.root
-        else:
-            self.current.add_child(graph.root)
+    def has_relationship(self, relationship, subgraph_defining_reltaionship):
+        assert self.root
+        subgraph_defining_reltaionship.root.has_relationship_with_parent(relationship)
+        self.current.add_child(subgraph_defining_reltaionship.root)
         return self
     
     def execute(self):

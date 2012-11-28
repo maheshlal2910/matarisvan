@@ -4,7 +4,7 @@
 
 import unittest
 import mock
-from mock import Mock
+from mock import Mock, MagicMock
 
 from matarisvan.operation_graph.entities import OperationNode, Relationship
 from matarisvan.operation_graph.data_operations import Informer, DataExtractor, UrlExtractor, DataSanitizer
@@ -15,20 +15,27 @@ class StubModel(object):
     
     @classmethod
     def get_or_create(self, **kwds):
+        print kwds
         return StubModel()
         
     def update(self, **kwds):
+        return self
+    
+    def some_rel(self, model):
         pass
+
 
 class Without_get_or_create(object):
     
     def update(self, **kwds):
         pass
 
+
 class Without_update(object):
     
     def get_or_create(self, **kwds):
         pass
+
 
 class StubDataExtractor(object):
     
@@ -113,3 +120,42 @@ class OperationNodeTest(unittest.TestCase):
         node.execute(data)
         model_class.get_or_create.assert_called_with(username='test')
         model_instance.update.assert_called_with(email='test@test.com')
+    
+    def test_execute_should_call_execute_of_child_if_child_exists(self):
+        model_class = Mock(spec = StubModel)
+        model_instance = Mock(spec = StubModel)
+        model_class.get_or_create.return_value = model_instance
+        model_instance.update.return_value = model_instance
+        node = OperationNode(model_class, self.informer, self.data_extractor, self.url_extractor,self.data_sanitizer)
+        child = Mock(spec = OperationNode)
+        node.add_child(child)
+        data = {'some_data':{'url':'http://localhost'}}
+        self.informer.using.return_value = self.informer
+        self.informer.get_data_from.return_value = user_test_data
+        node.execute(data)
+        child.execute.assert_called_with(data=user_test_data[1], parent=model_instance)
+    
+    def test_execute_should_create_relationship_with_parent(self):
+        model_class = Mock(spec = StubModel)
+        model_instance = Mock(spec = StubModel)
+        model_class.get_or_create.return_value = model_instance
+        model_instance.update.return_value = model_instance
+        
+        another_model = Mock(spec = StubModel)
+        another_model_instance = Mock(spec = StubModel)
+        another_model.get_or_create.return_value = another_model_instance
+        another_model_instance.update.return_value = another_model_instance
+        
+        node = OperationNode(model_class, self.informer, self.data_extractor, self.url_extractor,self.data_sanitizer)
+        child = OperationNode(another_model, self.informer, self.data_extractor, self.url_extractor,self.data_sanitizer)
+        child.has_relationship_with_parent('some_rel')
+        node.add_child(child)
+        data = {'some_data':{'url':'http://localhost'}}
+        self.informer.using.return_value = self.informer
+        self.informer.get_data_from.return_value = user_test_data
+        node.execute(data)
+        model_instance.some_rel.assert_called_with(another_model_instance)
+    
+    def test_has_relationship_should_set_relationship_on_node(self):
+        self.node.has_relationship_with_parent('some_relationship')
+        self.assertEquals('some_relationship', self.node._has_relationship)
