@@ -58,7 +58,7 @@ class DataSanitizer(object):
 
 class DataExtractor(object):
     
-    def __init__(self, model_id_mapping, model_data_mapping, default={}):
+    def __init__(self, model_id_mapping, model_data_mapping={}, default={}):
         assert isinstance(model_id_mapping, dict)
         assert isinstance(model_data_mapping,dict)
         assert isinstance(default, dict)
@@ -67,7 +67,16 @@ class DataExtractor(object):
         self._model_default = default
     
     def extract_model_data_from(self, data):
-        model_data = { attribute : data[self._model_data_mapping[attribute]] for attribute in self._model_data_mapping}
-        model_ids = {attribute : data[self._model_id_mapping[attribute]] for attribute in self._model_id_mapping}
+        model_data = { attribute : self._get_from_model_data(data, attrib=self._model_data_mapping[attribute]) for attribute in self._model_data_mapping}
+        model_ids = {attribute : self._get_from_model_data(data, attrib=self._model_id_mapping[attribute]) for attribute in self._model_id_mapping}
         model_ids.update(self._model_default)
         return model_ids, model_data
+    
+    def _get_from_model_data(self, data, attrib):
+        print data
+        model_attrib_data = data
+        if not isinstance(attrib, list):
+            return model_attrib_data[attrib]
+        for attrib_key in attrib:
+            model_attrib_data = model_attrib_data[attrib_key]
+        return model_attrib_data

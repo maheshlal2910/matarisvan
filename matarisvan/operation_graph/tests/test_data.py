@@ -52,3 +52,7 @@ user_test_data = [ {
     },
     "id" : 67164
   } ]
+
+discussion_data = {
+    'message' : {'subject': 'subject is nothing'}
+}

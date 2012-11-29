@@ -9,7 +9,7 @@ from mock import patch
 import base64, urllib2
 
 from matarisvan.operation_graph. data_operations import Informer, DataExtractor, UrlExtractor, DataSanitizer
-from matarisvan.operation_graph.tests.test_data import user_test_data
+from matarisvan.operation_graph.tests.test_data import user_test_data, discussion_data
 from matarisvan.operation_graph.generation_rules import LimitOffset, DefaultRule
 
 
@@ -53,6 +53,12 @@ class DataExtractorTest (unittest.TestCase):
         data_extractor = DataExtractor(model_id_mapping = model_ids, model_data_mapping = model_data, default = {'type':'user'})
         model_ids, model_data = data_extractor.extract_model_data_from(user_test_data[0])
         self.assertEquals({'username': 'johndoe', 'type':'user'}, model_ids)
+    
+    def test_extract_model_data_from_should_get_data_extracted_from_a_key_defined_by_list(self):
+        model_ids = {'name': ['message', 'subject']}
+        data_extractor = DataExtractor(model_id_mapping=model_ids)
+        model_ids, model_data = data_extractor.extract_model_data_from(discussion_data)
+        self.assertEquals({'name':'subject is nothing'}, model_ids)
 
 
 class UrlExtractorTest(unittest.TestCase):
