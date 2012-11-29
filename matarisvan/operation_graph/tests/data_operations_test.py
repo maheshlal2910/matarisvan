@@ -10,6 +10,7 @@ import base64, urllib2
 
 from matarisvan.operation_graph. data_operations import Informer, DataExtractor, UrlExtractor, DataSanitizer
 from matarisvan.operation_graph.tests.test_data import user_test_data
+from matarisvan.operation_graph.generation_rules import LimitOffset, DefaultRule
 
 
 class DataExtractorTest (unittest.TestCase):
@@ -78,6 +79,28 @@ class UrlExtractorTest(unittest.TestCase):
         url_extractor = UrlExtractor(['links', 'self', 'url'])
         with self.assertRaises(AssertionError):
             url_extractor.get_next_url()
+    
+    def test_get_next_url_should_call_apply_all_rules_on_url(self):
+        def_rule = Mock(spec = DefaultRule)
+        def_rule.apply_rule_to.return_value = 'http://localhost/2020'
+        generation_rule = Mock(spec=LimitOffset)
+        generation_rule.apply_rule_to.return_value = 'http://localhost?limit=5&offset=10'
+        url_extractor = UrlExtractor('http://localhost', next_url_generators = [def_rule, generation_rule])
+        url = url_extractor.get_next_url()
+        def_rule.apply_rule_to.assert_called_with('http://localhost')
+        generation_rule.apply_rule_to.assert_called_with('http://localhost/2020')
+        self.assertEquals('http://localhost?limit=5&offset=10', url)
+    
+    def test_get_next_url_should_call_apply_all_rules_on_url_from_url_descriptor(self):
+        def_rule = Mock(spec = DefaultRule)
+        def_rule.apply_rule_to.return_value = 'http://localhost/2020'
+        generation_rule = Mock(spec=LimitOffset)
+        generation_rule.apply_rule_to.return_value = 'http://localhost?limit=5&offset=10'
+        url_extractor = UrlExtractor(['links', 'self', 'url'], next_url_generators = [def_rule, generation_rule])
+        url = url_extractor.get_next_url({'links':{'self':{'url':'http://localhost'}}})
+        def_rule.apply_rule_to.assert_called_with('http://localhost')
+        generation_rule.apply_rule_to.assert_called_with('http://localhost/2020')
+        self.assertEquals('http://localhost?limit=5&offset=10', url)
 
 
 class DataSanitizerTest(unittest.TestCase):

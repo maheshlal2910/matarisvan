@@ -25,14 +25,19 @@ class UrlExtractor(object):
     def __init__(self, url_descriptor, next_url_generators=[]):
         assert isinstance(url_descriptor, list) or isinstance(url_descriptor, str)
         self._url_descriptor = url_descriptor
+        self._next_url_generators = next_url_generators
     
     def get_next_url(self, url_container = None):
+        url = url_container
         if isinstance(self._url_descriptor, str):
-            return self._url_descriptor
-        assert url_container is not None
-        for key in self._url_descriptor:
-            url_container = url_container[key]
-        return url_container
+            url =  self._url_descriptor
+        else:
+            assert url is not None
+            for key in self._url_descriptor:
+                url = url[key]
+        for generator in self._next_url_generators:
+            url =generator.apply_rule_to(url)
+        return url
 
 
 class DataSanitizer(object):
