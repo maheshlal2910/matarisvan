@@ -17,7 +17,7 @@ class Informer(object):
         request = urllib2.Request(url)
         request.add_header("Authorization", "Basic %s" % self._auth_string)
         result = urllib2.urlopen(request)
-        return self._data_sanitizer.clean(result)
+        return self._data_sanitizer.clean(result.read())
 
 
 class UrlExtractor(object):
@@ -27,14 +27,27 @@ class UrlExtractor(object):
         self._url_descriptor = url_descriptor
         self._next_url_generators = next_url_generators
     
-    def get_next_url(self, url_container = None):
+    def _find_url_using(self, url_container, url_descriptor):
         url = url_container
-        if isinstance(self._url_descriptor, str):
-            url =  self._url_descriptor
-        else:
-            assert url is not None
-            for key in self._url_descriptor:
-                url = url[key]
+        assert url is not None
+        for key in url_descriptor:
+            url = url[key]
+        return url
+    
+    def _find_url_by_trial_and_error(self, url_container):
+        url = url_container
+        for key in self._url_descriptor:
+            try:
+                return self._find_url_using(url, url_descriptor=key)
+            except KeyError:
+                print 'keyset %s not present. Trying next'%(key,)
+    
+    def get_next_url(self, url_container = None):
+        url = self._url_descriptor
+        if isinstance(self._url_descriptor, list) and isinstance(self._url_descriptor[0], str):
+            url = self._find_url_using(url_container, self._url_descriptor)
+        if isinstance(self._url_descriptor, list) and isinstance(self._url_descriptor[0], list):
+            url = self._find_url_by_trial_and_error(url_container)
         for generator in self._next_url_generators:
             url =generator.apply_rule_to(url)
         return url

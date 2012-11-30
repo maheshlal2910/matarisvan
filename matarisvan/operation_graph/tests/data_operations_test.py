@@ -86,6 +86,10 @@ class UrlExtractorTest(unittest.TestCase):
         with self.assertRaises(AssertionError):
             url_extractor.get_next_url()
     
+    def test_get_next_url_should_return_url_using_a_list_of_descriptors(self):
+        url_extractor = UrlExtractor([['links', 'other', 'url'], ['links', 'self', 'url']])
+        self.assertEquals('http://localhost', url_extractor.get_next_url({'links':{'self':{'url':'http://localhost'}}}))
+    
     def test_get_next_url_should_call_apply_all_rules_on_url(self):
         def_rule = Mock(spec = DefaultRule)
         def_rule.apply_rule_to.return_value = 'http://localhost/2020'
