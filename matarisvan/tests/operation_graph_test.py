@@ -67,7 +67,10 @@ class OperationGraphTest(unittest.TestCase):
         self.assertIsNotNone(self.g.current._informer)
         self.assertIsNotNone(self.g.current._data_extractor)
         self.assertIsNotNone(self.g.current._url_extractor)
-        
+    
+    def test_create_or_update_should_accept_blank_model_data_mapping(self):
+        self.g.from_url('http://localhost', discard='nonsense', data_found_at='data').create_or_update(StubModel, model_id_mapping={})
+    
     def test_has_relationship_should_throw_exception_root_is_none(self):
         subgraph = OperationGraph.using('test', 'password').from_url("http://localhost")
         with self.assertRaises(AssertionError):
