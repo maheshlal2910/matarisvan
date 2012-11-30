@@ -161,7 +161,14 @@ class InformerTest(unittest.TestCase):
         request = urllib2.Request('http://localhost')
         request.add_header("Authorization", "Basic %s" % auth_string)
         with patch.object(urllib2, 'urlopen') as mock_urllib:
-            mock_urllib.return_value = "val {'key' : []}"
+            mock_urllib.return_value = Response()
             data = self.informer.using(self.data_sanitizer).get_data_from(url = "http://localhost")
-            self.data_sanitizer.clean.assert_called_with("val {'key' : []}")
             self.assertEquals({'key':[]}, data)
+
+
+#Stub Classes
+
+class Response(object):
+    
+    def read(self):
+        return "val {'key' : []}"
