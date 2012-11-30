@@ -6,7 +6,7 @@ import unittest
 from mock import Mock
 from mock import patch
 
-import base64, urllib2
+import base64, urllib2, ast
 
 from matarisvan.operation_graph. data_operations import Informer, DataExtractor, UrlExtractor, DataSanitizer
 from matarisvan.operation_graph.tests.test_data import user_test_data, discussion_data
@@ -125,6 +125,13 @@ class DataSanitizerTest(unittest.TestCase):
         sanitizer = DataSanitizer()
         data = sanitizer.clean("{'key' : [{'hello':1, 'world':2}]}")
         self.assertEquals({'key' : [{'hello':1, 'world':2}]}, data)
+    
+    def test_should_return_None_if_exception_occurs(self):
+        with patch.object(ast, 'literal_eval') as mock_literal_eval:
+            mock_literal_eval.side_effect = Exception('problem')
+            sanitizer = DataSanitizer()
+            data = sanitizer.clean("{'key' : [{'hello':1, 'world':2}]}")
+            self.assertEquals([], data)
 
 
 class InformerTest(unittest.TestCase):

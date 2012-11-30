@@ -49,11 +49,16 @@ class DataSanitizer(object):
     def clean(self, data):
         if self._discard_value:
             data = data.replace(self._discard_value, '')
-        data = data.strip()
-        cleaned_data = ast.literal_eval(data)
-        if self._data_key:
-            return cleaned_data.get(self._data_key)
-        return cleaned_data
+        try:
+            data = data.strip()
+            cleaned_data = ast.literal_eval(data)
+            if self._data_key:
+                return cleaned_data.get(self._data_key)
+            return cleaned_data
+        except Exception as e:
+            print data
+            print e
+            return []
 
 
 class DataExtractor(object):
