@@ -34,7 +34,9 @@ class OperationNode(object):
     def _create_model_using(self, data, parent=None):
         model_ids, model_data = self._data_extractor.extract_model_data_from(data)
         model = self._model.get_or_create(**model_ids).update(**model_data)
+        print model
         if parent and self._has_relationship!='':
+            print model, self._has_relationship, parent
             getattr(parent, self._has_relationship)(model)
         for child in self.children:
             child.end_node.execute(data=data, parent=model)
