@@ -81,7 +81,7 @@ class OperationGraphTest(unittest.TestCase):
         subgraph = OperationGraph.using('test', 'password').from_url("http://localhost").create_or_update(StubModel(), {}, {})
         self.g.has_relationship('relationship', subgraph)
         current = self.g.current
-        self.assertEquals(subgraph.root, current.children[0].end_node )
+        self.assertEquals(subgraph.root, current.children[0].end_node)
     
     def test_has_relationship_should_clear_all_current_variables(self):
         self.g.from_url('http://localhost', discard='nonsense', data_found_at='data').create_or_update(StubModel(), {}, {})
@@ -96,3 +96,15 @@ class OperationGraphTest(unittest.TestCase):
         self.g.has_relationship('some_relationship', subgraph_defining_relationship = subgraph)
         current = self.g.current
         self.assertEquals('some_relationship', current.children[0].end_node._has_relationship)
+    
+    def test_has_relationship_with_self_should_add_self_as_child(self):
+        self.g.from_url('http://localhost', discard='nonsense', data_found_at='data').create_or_update(StubModel(), {}, {}).has_relationship_with_self()
+        self.assertEquals(self.g.root, self.g.root.children[0].end_node)
+    
+    def test_has_relationship_with_self_should_return_graph_object(self):
+        g = self.g.from_url('http://localhost', discard='nonsense', data_found_at='data').create_or_update(StubModel(), {}, {}).has_relationship_with_self()
+        self.assertEquals(self.g, g)
+    
+    def test_has_relationship_should_throw_error_if_root_is_none(self):
+        with self.assertRaises(AssertionError):
+            self.g.has_relationship_with_self()

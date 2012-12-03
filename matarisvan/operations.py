@@ -36,5 +36,10 @@ class OperationGraph(object):
         self.current.add_child(subgraph_defining_relationship.root)
         return self
     
+    def has_relationship_with_self(self):
+        assert self.root
+        self.root.add_child(self.root)
+        return self
+    
     def execute(self):
         self.root.execute()
