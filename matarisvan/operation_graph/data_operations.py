@@ -2,7 +2,9 @@
 #-*- coding:utf-8 -*-
 
 
-import urllib2, ast, base64, urllib, json
+import urllib2, ast, base64, urllib
+
+import simplejson as json
 
 from matarisvan import logger
 
@@ -16,6 +18,9 @@ class Informer(object):
         return self
     
     def get_data_from(self, url):
+        logger.debug(url)
+        if not url:
+            return []
         request = urllib2.Request(url)
         request.add_header("Authorization", "Basic %s" % self._auth_string)
         result = urllib2.urlopen(request)
@@ -65,14 +70,19 @@ class DataSanitizer(object):
         self._data_key = data_key
     
     def clean(self, data):
-        logger.debug(data)
         logger.debug("cleaning data")
         data = data.replace("'", '"')
+        data = data.replace("self", "this")
+        data = data.replace(" :", ":")
+        data = data.replace('\n', '')
         if self._discard_value:
+            logger.debug('Discard')
+            logger.debug(self._discard_value)
             data = data.replace(self._discard_value, '')
         try:
             logger.debug('strip data clean')
             data = data.strip()
+            logger.debug(data)
             logger.debug('eval the string to get dict')
             cleaned_data = json.loads(data)
             if self._data_key:

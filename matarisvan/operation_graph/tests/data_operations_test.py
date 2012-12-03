@@ -6,7 +6,7 @@ import unittest
 from mock import Mock
 from mock import patch
 
-import base64, urllib2, ast, json
+import base64, urllib2, ast, simplejson
 
 from matarisvan.operation_graph. data_operations import Informer, DataExtractor, UrlExtractor, DataSanitizer
 from matarisvan.operation_graph.tests.test_data import user_test_data, discussion_data
@@ -131,7 +131,7 @@ class DataSanitizerTest(unittest.TestCase):
         self.assertEquals({'key' : [{'hello':1, 'world':2}]}, data)
     
     def test_should_return_None_if_exception_occurs(self):
-        with patch.object(json, 'loads') as mock_loads:
+        with patch.object(simplejson, 'loads') as mock_loads:
             mock_loads.side_effect = Exception('problem')
             sanitizer = DataSanitizer()
             data = sanitizer.clean("{'key' : [{'hello':1, 'world':2}]}")
@@ -168,6 +168,11 @@ class InformerTest(unittest.TestCase):
             mock_urllib.return_value = Response()
             data = self.informer.using(self.data_sanitizer).get_data_from(url = "http://localhost")
             self.assertEquals({'key':[]}, data)
+    
+    def test_should_return_empty_list_in_case_url_is_none(self):
+        self.informer = Informer(username='test', password='test_pswd')
+        data = self.informer.using(Mock(spec=DataSanitizer)).get_data_from(None)
+        self.assertEquals([], data)
 
 
 #Stub Classes
