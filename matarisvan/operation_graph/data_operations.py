@@ -2,7 +2,9 @@
 #-*- coding:utf-8 -*-
 
 
-import urllib2, ast, base64, urllib
+import urllib2, ast, base64, urllib, json
+
+from matarisvan import logger
 
 class Informer(object):
     
@@ -17,6 +19,7 @@ class Informer(object):
         request = urllib2.Request(url)
         request.add_header("Authorization", "Basic %s" % self._auth_string)
         result = urllib2.urlopen(request)
+        logger.debug("Result found")
         return self._data_sanitizer.clean(result.read())
 
 
@@ -28,6 +31,7 @@ class UrlExtractor(object):
         self._next_url_generators = next_url_generators
     
     def _find_url_using(self, url_container, url_descriptor):
+        logger.debug('url_container = %s'%(url_container,))
         url = url_container
         assert url is not None
         for key in url_descriptor:
@@ -39,7 +43,8 @@ class UrlExtractor(object):
         for key in self._url_descriptor:
             try:
                 return self._find_url_using(url, url_descriptor=key)
-            except KeyError:
+            except KeyError as e:
+                logger.warning(e)
                 print 'keyset %s not present. Trying next'%(key,)
     
     def get_next_url(self, url_container = None):
@@ -60,17 +65,26 @@ class DataSanitizer(object):
         self._data_key = data_key
     
     def clean(self, data):
+        logger.debug(data)
+        logger.debug("cleaning data")
+        data = data.replace("'", '"')
         if self._discard_value:
             data = data.replace(self._discard_value, '')
         try:
+            logger.debug('strip data clean')
             data = data.strip()
-            cleaned_data = ast.literal_eval(data)
+            logger.debug('eval the string to get dict')
+            cleaned_data = json.loads(data)
             if self._data_key:
-                return cleaned_data.get(self._data_key)
+                logger.debug('get the data')
+                return_value = cleaned_data.get(self._data_key)
+                logger.debug(return_value)
+                return return_value
+            logger.debug('Data:')
+            logger.debug(cleaned_data)
             return cleaned_data
         except Exception as e:
-            print data
-            print e
+            logger.error(e)
             return []
 
 
@@ -91,7 +105,6 @@ class DataExtractor(object):
         return model_ids, model_data
     
     def _get_from_model_data(self, data, attrib):
-        print data
         model_attrib_data = data
         if not isinstance(attrib, list):
             return model_attrib_data[attrib]
