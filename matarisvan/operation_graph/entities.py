@@ -32,19 +32,23 @@ class OperationNode(object):
         logger.debug('begin execute')
         url = self._url_extractor.get_next_url(data)
         response = self._informer.using(self._data_sanitizer).get_data_from(url)
+        if not response:
+            logger.debug("No data")
+            return
         if isinstance(response, list):
+            logger.debug("Is list")
             for reponse_object in response:
                 self._create_model_using(reponse_object, parent)
         else:
             self._create_model_using(response, parent = parent)
     
     def _create_model_using(self, data, parent=None):
+        logger.debug("model_data %s"%(data,))
         model_ids, model_data = self._data_extractor.extract_model_data_from(data)
-        print model_ids, model_data
         model = self._model.get_or_create(**model_ids).update(**model_data)
-        print model
+        logger.debug(model)
         if parent and self._has_relationship!='':
-            print model, self._has_relationship, parent
+            logger.debug('%s ----- %s ----> %s'%(model, self.has_relationship, parent))
             getattr(parent, self._has_relationship)(model)
         for child in self.children:
             child.end_node.execute(data=data, parent=model)

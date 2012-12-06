@@ -36,7 +36,7 @@ class UrlExtractor(object):
         self._next_url_generators = next_url_generators
     
     def _find_url_using(self, url_container, url_descriptor):
-        logger.debug('url_container = %s'%(url_container,))
+        #logger.debug('url_container = %s'%(url_container,))
         url = url_container
         assert url is not None
         for key in url_descriptor:
@@ -69,15 +69,13 @@ class DataSanitizer(object):
         self._discard_values = discard_value
         self._data_key = data_key
     def clean(self, data):
-        logger.debug('data is ----> %s'%(data,))
+        #logger.debug('data is ----> %s'%(data,))
         logger.debug("cleaning data")
         logger.debug('Discard%s'%(self._discard_values,))
         for discard_value in self._discard_values:
             data = data.replace(discard_value, '')
         try:
-            logger.debug('data clean')
             data = self._clean_for_reading_as_json(data)
-            logger.debug(data)
             logger.debug('eval the string to get dict')
             cleaned_data = json.loads(data)
             if self._data_key:

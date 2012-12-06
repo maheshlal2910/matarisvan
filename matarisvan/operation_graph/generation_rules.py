@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
+from matarisvan import logger
+
 class LimitOffset(object):
     
     def __init__(self, limit, offset):
