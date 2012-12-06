@@ -65,16 +65,15 @@ class UrlExtractor(object):
 
 class DataSanitizer(object):
     
-    def __init__(self, discard_value=None, data_key=None):
-        self._discard_value = discard_value
+    def __init__(self, discard_value=[], data_key=None):
+        self._discard_values = discard_value
         self._data_key = data_key
     def clean(self, data):
         logger.debug('data is ----> %s'%(data,))
         logger.debug("cleaning data")
-        if self._discard_value:
-            logger.debug('Discard')
-            logger.debug(self._discard_value)
-            
+        logger.debug('Discard%s'%(self._discard_values,))
+        for discard_value in self._discard_values:
+            data = data.replace(discard_value, '')
         try:
             logger.debug('data clean')
             data = self._clean_for_reading_as_json(data)

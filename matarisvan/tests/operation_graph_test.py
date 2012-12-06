@@ -38,7 +38,7 @@ class OperationGraphTest(unittest.TestCase):
         self.assertIsNotNone(self.g._informer)
         self.assertEquals(auth_string, self.g._informer._auth_string)
         self.assertEquals('http://localhost', self.g._url_extractor._url_descriptor)
-        self.assertEquals('nonsense', self.g._data_sanitizer._discard_value)
+        self.assertEquals('nonsense', self.g._data_sanitizer._discard_values)
         self.assertEquals('data', self.g._data_sanitizer._data_key)
     
     def test_from_url_should_return_self(self):

@@ -116,7 +116,7 @@ class UrlExtractorTest(unittest.TestCase):
 class DataSanitizerTest(unittest.TestCase):
     
     def test_should_clean_data_passed_in(self):
-        sanitizer = DataSanitizer(discard_value = 'val', data_key = 'key')
+        sanitizer = DataSanitizer(discard_value = ['val'], data_key = 'key')
         data = sanitizer.clean(" val {'key' : []}")
         self.assertEquals([], data)
     
@@ -136,6 +136,11 @@ class DataSanitizerTest(unittest.TestCase):
             sanitizer = DataSanitizer()
             data = sanitizer.clean("{'key' : [{'hello':1, 'world':2}]}")
             self.assertEquals([], data)
+    
+    def test_should_remove_all_specified_in_discard_value(self):
+        sanitizer = DataSanitizer(discard_value = ['val', 'val2'], data_key = 'key')
+        data = sanitizer.clean(" val val2 {'key' : []}")
+        self.assertEquals([], data)
 
 
 class InformerTest(unittest.TestCase):
