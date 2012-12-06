@@ -41,5 +41,10 @@ class OperationGraph(object):
         self.root.add_child(self.root)
         return self
     
+    def has_more_like_this(self):
+        assert self.root
+        self.root.add_next(self.root)
+        return self
+    
     def execute(self):
         self.root.execute()

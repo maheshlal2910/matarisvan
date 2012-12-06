@@ -9,6 +9,7 @@ class OperationNode(object):
         assert 'get_or_create' in dir(model)
         assert 'update' in dir(model)
         self.children = []
+        self.next = None
         self.parent = None
         self._informer = informer
         self._data_extractor = data_extractor
@@ -22,6 +23,10 @@ class OperationNode(object):
         child_rel = Relationship(self, child)
         child.parent = Relationship(child, self)
         self.children.append(child_rel)
+    
+    def add_next(self, next):
+        assert isinstance(next, OperationNode)
+        self. next = Relationship(self, next)
     
     def execute(self, data=None, parent=None):
         logger.debug('begin execute')
@@ -43,6 +48,8 @@ class OperationNode(object):
             getattr(parent, self._has_relationship)(model)
         for child in self.children:
             child.end_node.execute(data=data, parent=model)
+        if self.next:
+            self.next.end_node.execute(data=data)
     
     def has_relationship_with_parent(self, relation_name):
         self._has_relationship = relation_name

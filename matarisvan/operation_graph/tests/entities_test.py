@@ -72,6 +72,16 @@ class OperationNodeTest(unittest.TestCase):
         self.node.add_child(child)
         self.assertEquals(self.node, child.parent.end_node)
     
+    def test_add_next_should_add_next(self):
+        next = OperationNode(StubModel, self.informer, self.data_extractor, self.url_extractor, self.data_sanitizer)
+        self.node.add_next(next)
+        self.assertIsNotNone(self.node.next)
+        self.assertEquals(next, self.node.next.end_node)
+    
+    def test_shouldnt_add_next_if_passed_object_isnt_Node(self):
+        with self.assertRaises(AssertionError):
+            self.node.add_next(self.stub)
+    
     def test_should_raise_error_for_model_without_get_or_create_and_update(self):
         with self.assertRaises(AssertionError):
             OperationNode(Without_get_or_create, self.informer, self.data_extractor, self.url_extractor, self.data_sanitizer)
@@ -134,6 +144,20 @@ class OperationNodeTest(unittest.TestCase):
         self.informer.get_data_from.return_value = user_test_data
         node.execute(data)
         child.execute.assert_called_with(data=user_test_data[1], parent=model_instance)
+    
+    def test_execute_should_call_execute_of_child_if_child_exists(self):
+        model_class = Mock(spec = StubModel)
+        model_instance = Mock(spec = StubModel)
+        model_class.get_or_create.return_value = model_instance
+        model_instance.update.return_value = model_instance
+        node = OperationNode(model_class, self.informer, self.data_extractor, self.url_extractor,self.data_sanitizer)
+        next = Mock(spec = OperationNode)
+        node.add_next(next)
+        data = {'some_data':{'url':'http://localhost'}}
+        self.informer.using.return_value = self.informer
+        self.informer.get_data_from.return_value = user_test_data
+        node.execute(data)
+        next.execute.assert_called_with(data=user_test_data[1])
     
     def test_execute_should_create_relationship_with_parent(self):
         model_class = Mock(spec = StubModel)
