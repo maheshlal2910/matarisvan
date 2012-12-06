@@ -68,20 +68,16 @@ class DataSanitizer(object):
     def __init__(self, discard_value=None, data_key=None):
         self._discard_value = discard_value
         self._data_key = data_key
-    
     def clean(self, data):
+        logger.debug('data is ----> %s'%(data,))
         logger.debug("cleaning data")
-        data = data.replace("'", '"')
-        data = data.replace("self", "this")
-        data = data.replace(" :", ":")
-        data = data.replace('\n', '')
         if self._discard_value:
             logger.debug('Discard')
             logger.debug(self._discard_value)
-            data = data.replace(self._discard_value, '')
+            
         try:
-            logger.debug('strip data clean')
-            data = data.strip()
+            logger.debug('data clean')
+            data = self._clean_for_reading_as_json(data)
             logger.debug(data)
             logger.debug('eval the string to get dict')
             cleaned_data = json.loads(data)
@@ -96,6 +92,14 @@ class DataSanitizer(object):
         except Exception as e:
             logger.error(e)
             return []
+    
+    def _clean_for_reading_as_json(self, data):
+        data = data.replace("'", '"')
+        data = data.replace("self", "this")
+        data = data.replace(" :", ":")
+        data = data.replace('\n', '')
+        data = data.strip()
+        return data
 
 
 class DataExtractor(object):

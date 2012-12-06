@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
+from matarisvan import logger
 
 class OperationNode(object):
     
@@ -23,6 +24,7 @@ class OperationNode(object):
         self.children.append(child_rel)
     
     def execute(self, data=None, parent=None):
+        logger.debug('begin execute')
         url = self._url_extractor.get_next_url(data)
         response = self._informer.using(self._data_sanitizer).get_data_from(url)
         if isinstance(response, list):
@@ -33,6 +35,7 @@ class OperationNode(object):
     
     def _create_model_using(self, data, parent=None):
         model_ids, model_data = self._data_extractor.extract_model_data_from(data)
+        print model_ids, model_data
         model = self._model.get_or_create(**model_ids).update(**model_data)
         print model
         if parent and self._has_relationship!='':
