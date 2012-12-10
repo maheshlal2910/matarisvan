@@ -41,6 +41,8 @@ class OperationNode(object):
                 self._create_model_using(reponse_object, parent)
         else:
             self._create_model_using(response, parent = parent)
+        if self.next:
+	            self.next.end_node.execute()
     
     def _create_model_using(self, data, parent=None):
         logger.debug("model_data %s"%(data,))
@@ -52,8 +54,6 @@ class OperationNode(object):
             getattr(parent, self._has_relationship)(model)
         for child in self.children:
             child.end_node.execute(data=data, parent=model)
-        if self.next:
-            self.next.end_node.execute(data=data)
     
     def has_relationship_with_parent(self, relation_name):
         self._has_relationship = relation_name

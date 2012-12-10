@@ -157,7 +157,7 @@ class OperationNodeTest(unittest.TestCase):
         self.informer.using.return_value = self.informer
         self.informer.get_data_from.return_value = user_test_data
         node.execute(data)
-        next.execute.assert_called_with(data=user_test_data[1])
+        next.execute.assert_called_with()
     
     def test_execute_should_create_relationship_with_parent(self):
         model_class = Mock(spec = StubModel)
