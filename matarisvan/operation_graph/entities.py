@@ -32,7 +32,7 @@ class OperationNode(object):
         logger.debug('begin execute')
         url = self._url_extractor.get_next_url(data)
         response = self._informer.using(self._data_sanitizer).get_data_from(url)
-        if not response:
+        if response is None:
             logger.debug("No data")
             return
         if isinstance(response, list):
@@ -45,7 +45,9 @@ class OperationNode(object):
 	            self.next.end_node.execute()
     
     def _create_model_using(self, data, parent=None):
+        
         logger.debug("model_data %s"%(data,))
+        #try:
         model_ids, model_data = self._data_extractor.extract_model_data_from(data)
         model = self._model.get_or_create(**model_ids).update(**model_data)
         logger.debug(model)
@@ -54,6 +56,8 @@ class OperationNode(object):
             getattr(parent, self._has_relationship)(model)
         for child in self.children:
             child.end_node.execute(data=data, parent=model)
+        #except Exception as e:
+        #logger.error(e)
     
     def has_relationship_with_parent(self, relation_name):
         self._has_relationship = relation_name

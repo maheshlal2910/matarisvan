@@ -4,6 +4,8 @@
 
 import urllib2, ast, base64, urllib
 
+import pickle
+
 import simplejson as json
 
 from matarisvan import logger
@@ -24,7 +26,7 @@ class Informer(object):
         request = urllib2.Request(url)
         request.add_header("Authorization", "Basic %s" % self._auth_string)
         result = urllib2.urlopen(request)
-        logger.debug("Result found")
+        logger.debug("Result found:")
         return self._data_sanitizer.clean(result.read())
 
 
@@ -75,18 +77,19 @@ class DataSanitizer(object):
         for discard_value in self._discard_values:
             data = data.replace(discard_value, '')
         try:
-            data = self._clean_for_reading_as_json(data)
+            readable_data = self._clean_for_reading_as_json(data)
+            logger.debug("cleaned data ----->%s"%(readable_data,))
             logger.debug('eval the string to get dict')
-            cleaned_data = json.loads(data)
+            cleaned_data = json.loads(readable_data)
             if self._data_key:
                 logger.debug('get the data')
                 return_value = cleaned_data.get(self._data_key)
-                logger.debug(return_value)
+                if not return_value:
+                    return None
                 return return_value
-            logger.debug('Data:')
-            logger.debug(cleaned_data)
             return cleaned_data
         except Exception as e:
+            logger.debug(data)
             logger.error(e)
             return []
     
@@ -101,18 +104,22 @@ class DataSanitizer(object):
 
 class DataExtractor(object):
     
-    def __init__(self, model_id_mapping, model_data_mapping={}, default={}):
+    def __init__(self, model_id_mapping, model_data_mapping={}, default=None):
         assert isinstance(model_id_mapping, dict)
         assert isinstance(model_data_mapping,dict)
-        assert isinstance(default, dict)
+        assert default is None or isinstance(default, dict)
         self._model_id_mapping = model_id_mapping
         self._model_data_mapping = model_data_mapping
         self._model_default = default
     
     def extract_model_data_from(self, data):
+        if self._model_default is None:
+                self._model_default = {}
+        logger.debug("id_mapping: %s \n data_mapping: %s, \n, default: %s"%(self._model_id_mapping, self._model_data_mapping, self._model_default))
         model_data = { attribute : self._get_from_model_data(data, attrib=self._model_data_mapping[attribute]) for attribute in self._model_data_mapping}
         model_ids = {attribute : self._get_from_model_data(data, attrib=self._model_id_mapping[attribute]) for attribute in self._model_id_mapping}
         model_ids.update(self._model_default)
+        logger.debug("Model_info: \n %s \n %s"%(model_ids, model_data))
         return model_ids, model_data
     
     def _get_from_model_data(self, data, attrib):
