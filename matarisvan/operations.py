@@ -20,8 +20,8 @@ class OperationGraph(object):
         self._informer = Informer(self._username, self._password)
         return self
     
-    def create_or_update(self, model, model_id_mapping, model_data_mapping={}, default=None):
-        data_extractor = DataExtractor(model_id_mapping=model_id_mapping, model_data_mapping=model_data_mapping, default=default)
+    def create_or_update(self, model, model_id_mapping, model_data_mapping={}, default={}, using_processors={}):
+        data_extractor = DataExtractor(model_id_mapping=model_id_mapping, model_data_mapping=model_data_mapping, default=default, using_processors=using_processors)
         node = OperationNode(model, informer = self._informer, data_extractor = data_extractor, url_extractor = self._url_extractor, data_sanitizer = self._data_sanitizer)
         if not self.root:
             self.root = node

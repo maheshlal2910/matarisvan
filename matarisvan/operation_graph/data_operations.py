@@ -104,28 +104,38 @@ class DataSanitizer(object):
 
 class DataExtractor(object):
     
-    def __init__(self, model_id_mapping, model_data_mapping={}, default=None):
+    def __init__(self, model_id_mapping, model_data_mapping={}, default=None, using_processors={}):
         assert isinstance(model_id_mapping, dict)
         assert isinstance(model_data_mapping,dict)
         assert default is None or isinstance(default, dict)
         self._model_id_mapping = model_id_mapping
         self._model_data_mapping = model_data_mapping
         self._model_default = default
+        self._processors = using_processors
     
     def extract_model_data_from(self, data):
         if self._model_default is None:
                 self._model_default = {}
-        logger.debug("id_mapping: %s \n data_mapping: %s, \n, default: %s"%(self._model_id_mapping, self._model_data_mapping, self._model_default))
-        model_data = { attribute : self._get_from_model_data(data, attrib=self._model_data_mapping[attribute]) for attribute in self._model_data_mapping}
-        model_ids = {attribute : self._get_from_model_data(data, attrib=self._model_id_mapping[attribute]) for attribute in self._model_id_mapping}
+        logger.debug("id_mapping: %s \n data_mapping: %s, \n, default: %s, processors:%s"%(self._model_id_mapping, self._model_data_mapping, self._model_default, self._processors))
+        model_data = { attribute : self._process_data(data, processor_id=attribute, reference_mapping=self._model_data_mapping) for attribute in self._model_data_mapping}
+        model_ids = {attribute : self._process_data(data, processor_id=attribute, reference_mapping=self._model_id_mapping) for attribute in self._model_id_mapping}
         model_ids.update(self._model_default)
         logger.debug("Model_info: \n %s \n %s"%(model_ids, model_data))
         return model_ids, model_data
     
     def _get_from_model_data(self, data, attrib):
         model_attrib_data = data
+        processor_id = attrib
         if not isinstance(attrib, list):
             return model_attrib_data[attrib]
         for attrib_key in attrib:
             model_attrib_data = model_attrib_data[attrib_key]
         return model_attrib_data
+    
+    def _process_data(self, data, processor_id, reference_mapping):
+        logger.debug('processor_id=%s'%(processor_id,))
+        extracted_data = self._get_from_model_data(data, attrib=reference_mapping[processor_id])
+        processor = self._processors.get(processor_id)
+        if processor:
+            return processor.process(extracted_data)
+        return extracted_data

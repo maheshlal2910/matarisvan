@@ -59,6 +59,14 @@ class DataExtractorTest (unittest.TestCase):
         data_extractor = DataExtractor(model_id_mapping=model_ids)
         model_ids, model_data = data_extractor.extract_model_data_from(discussion_data)
         self.assertEquals({'name':'subject is nothing'}, model_ids)
+    
+    def test_extract_model_data_should_process_data_and_return_it(self):
+        model_ids = {'name': ['message', 'subject']}
+        processor = Mock()
+        processor.process.return_value = "subject is something"
+        data_extractor = DataExtractor(model_id_mapping=model_ids, using_processors = {'name': processor})
+        model_ids, model_data = data_extractor.extract_model_data_from(discussion_data)
+        self.assertEquals({'name':'subject is something'}, model_ids)
 
 
 class UrlExtractorTest(unittest.TestCase):
