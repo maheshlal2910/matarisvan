@@ -119,6 +119,13 @@ class UrlExtractorTest(unittest.TestCase):
         def_rule.apply_rule_to.assert_called_with('http://localhost')
         generation_rule.apply_rule_to.assert_called_with('http://localhost/2020')
         self.assertEquals('http://localhost?limit=5&offset=10', url)
+    
+    def test_get_next_url_should_return_none_in_case_of_error(self):
+        url_extractor = UrlExtractor(['links', 'other', 'url'])
+        self.assertIsNone(url_extractor.get_next_url({'links':{'self':{'url':'http://localhost'}}}))
+        
+        url_extractor = UrlExtractor([['links', 'other', 'url'], ['self', 'other', 'url']])
+        self.assertIsNone(url_extractor.get_next_url({'links':{'self':{'url':'http://localhost'}}}))
 
 
 class DataSanitizerTest(unittest.TestCase):

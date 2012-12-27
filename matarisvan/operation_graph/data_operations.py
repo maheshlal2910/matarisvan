@@ -53,11 +53,16 @@ class UrlExtractor(object):
             except KeyError as e:
                 logger.warning(e)
                 print 'keyset %s not present. Trying next'%(key,)
+        return None
     
     def get_next_url(self, url_container = None):
         url = self._url_descriptor
         if isinstance(self._url_descriptor, list) and isinstance(self._url_descriptor[0], str):
-            url = self._find_url_using(url_container, self._url_descriptor)
+            try:
+                url = self._find_url_using(url_container, self._url_descriptor)
+            except KeyError as e:
+                logger.error(e)
+                url = None
         if isinstance(self._url_descriptor, list) and isinstance(self._url_descriptor[0], list):
             url = self._find_url_by_trial_and_error(url_container)
         for generator in self._next_url_generators:
@@ -94,10 +99,11 @@ class DataSanitizer(object):
             return []
     
     def _clean_for_reading_as_json(self, data):
-        data = data.replace("'", '"')
+        #data = data.replace("'", '"')
         data = data.replace("self", "this")
         data = data.replace(" :", ":")
         data = data.replace('\n', '')
+        data = data.replace('\u', '')
         data = data.strip()
         return data
 
