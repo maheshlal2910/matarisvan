@@ -75,12 +75,8 @@ class DataSanitizer(object):
     def __init__(self, discard_value=[], data_key=None):
         self._discard_values = discard_value
         self._data_key = data_key
+    
     def clean(self, data):
-        #logger.debug('data is ----> %s'%(data,))
-        logger.debug("cleaning data")
-        logger.debug('Discard%s'%(self._discard_values,))
-        for discard_value in self._discard_values:
-            data = data.replace(discard_value, '')
         try:
             readable_data = self._clean_for_reading_as_json(data)
             logger.debug("cleaned data ----->%s"%(readable_data,))
@@ -99,7 +95,10 @@ class DataSanitizer(object):
             return []
     
     def _clean_for_reading_as_json(self, data):
-        #data = data.replace("'", '"')
+        logger.debug("cleaning data")
+        logger.debug('Discard%s'%(self._discard_values,))
+        for discard_value in self._discard_values:
+            data = data.replace(discard_value, '')
         data = data.replace("self", "this")
         data = data.replace(" :", ":")
         data = data.replace('\n', '')

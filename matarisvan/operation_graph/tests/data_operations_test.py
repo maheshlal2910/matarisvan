@@ -124,7 +124,7 @@ class UrlExtractorTest(unittest.TestCase):
         url_extractor = UrlExtractor(['links', 'other', 'url'])
         self.assertIsNone(url_extractor.get_next_url({'links':{'self':{'url':'http://localhost'}}}))
         
-        url_extractor = UrlExtractor([['links', 'other', 'url'], ['self', 'other', 'url']])
+        url_extractor = UrlExtractor([['links', 'other', 'url'], ['self', 'other', 'urllib2']])
         self.assertIsNone(url_extractor.get_next_url({'links':{'self':{'url':'http://localhost'}}}))
 
 
@@ -132,12 +132,12 @@ class DataSanitizerTest(unittest.TestCase):
     
     def test_should_clean_data_passed_in(self):
         sanitizer = DataSanitizer(discard_value = ['val'], data_key = 'key')
-        data = sanitizer.clean(" val {'key' : [1,2]}")
+        data = sanitizer.clean(' val {"key" : [1,2]}')
         self.assertEquals([1,2], data)
     
     def test_should_return_data_without_truncation_if_no_discard_value(self):
         sanitizer = DataSanitizer(data_key = 'key')
-        data = sanitizer.clean("{'key' : [{'hello':1, 'world':2}]}")
+        data = sanitizer.clean('{"key" : [{"hello":1, "world":2}]}')
         self.assertEquals([{'hello':1, 'world':2}], data)
     
     def test_should_return_data_as_is_if_data_key_not_defined(self):
@@ -159,7 +159,7 @@ class DataSanitizerTest(unittest.TestCase):
     
     def test_should_return_None_if_cleaned_dta_is_blank_list(self):
         sanitizer = DataSanitizer(discard_value = ['val1', 'val2'], data_key = 'key')
-        data = sanitizer.clean(" val1 val2 {'key' : []}")
+        data = sanitizer.clean(' val1 val2 {"key" : []}')
         self.assertEquals(None, data)
 
 
