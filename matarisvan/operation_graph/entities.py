@@ -52,7 +52,7 @@ class OperationNode(object):
         model = self._model.get_or_create(**model_ids).update(**model_data)
         logger.debug(model)
         if parent and self._has_relationship!='':
-            logger.debug('%s ----- %s ----> %s'%(model, self._has_relationship, parent))
+            logger.debug('%s ----- %s ----> %s'%(parent, self._has_relationship, model))
             getattr(parent, self._has_relationship)(model)
         for child in self.children:
             child.end_node.execute(data=data, parent=model)
