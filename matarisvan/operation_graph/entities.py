@@ -47,17 +47,17 @@ class OperationNode(object):
     def _create_model_using(self, data, parent=None):
         
         logger.debug("model_data %s"%(data,))
-        #try:
-        model_ids, model_data = self._data_extractor.extract_model_data_from(data)
-        model = self._model.get_or_create(**model_ids).update(**model_data)
-        logger.debug(model)
-        if parent and self._has_relationship!='':
-            logger.debug('%s ----- %s ----> %s'%(parent, self._has_relationship, model))
-            getattr(parent, self._has_relationship)(model)
-        for child in self.children:
-            child.end_node.execute(data=data, parent=model)
-        #except Exception as e:
-        #logger.error(e)
+        try:
+            model_ids, model_data = self._data_extractor.extract_model_data_from(data)
+            model = self._model.get_or_create(**model_ids).update(**model_data)
+            logger.debug(model)
+            if parent and self._has_relationship!='':
+                logger.debug('%s ----- %s ----> %s'%(parent, self._has_relationship, model))
+                getattr(parent, self._has_relationship)(model)
+            for child in self.children:
+                child.end_node.execute(data=data, parent=model)
+        except Exception as e:
+            logger.error(e)
     
     def has_relationship_with_parent(self, relation_name):
         self._has_relationship = relation_name
